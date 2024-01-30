@@ -6,7 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity
  */
-class Comments
+class Comment
 {
     /**
      * @ORM\Id
@@ -16,19 +16,19 @@ class Comments
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Posts", inversedBy="comments")
+     * @ORM\ManyToOne(targetEntity="Post", inversedBy="comments")
      * @ORM\JoinColumn(name="post_id", referencedColumnName="id")
      */
     private $post;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Users")
+     * @ORM\ManyToOne(targetEntity="User")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
      */
     private $user;
 
     /**
-     * @ORM\Column(type="text")
+     * @ORM\Column(type="string", length=255) // a remplacer par un blob
      */
     private $text;
 
@@ -48,49 +48,49 @@ class Comments
 
 
     /**
-     * @return Posts
+     * @return Post
      */
-    public function getPost()
+    public function getPost(): Post
     {
         return $this->post;
     }
 
     /**
-     * @param Posts $post
+     * @param Post $post
      */
-    public function setPost(Posts $post): void
+    public function setPost(Post $post): void
     {
         $this->post = $post;
     }
 
     /**
-     * @return Users
+     * @return User
      */
-    public function getUser()
+    public function getUser(): User
     {
         return $this->user;
     }
 
     /**
-     * @param Users $user
+     * @param User $user
      */
-    public function setUser(Users $user): void
+    public function setUser(User $user): void
     {
         $this->user = $user;
     }
 
     /**
-     * @return Texts
+     * @return string
      */
-    public function getText()
+    public function getText(): string
     {
         return $this->text;
     }
 
     /**
-     * @param Texts $text
+     * @param string $text
      */
-    public function setText(Texts $text): void
+    public function setText(string $text): void
     {
         $this->text = $text;
     }

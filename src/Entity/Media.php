@@ -6,7 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity
  */
-class Medias
+class Media
 {
     /**
      * @ORM\Id
@@ -16,7 +16,7 @@ class Medias
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Posts", inversedBy="medias")
+     * @ORM\ManyToOne(targetEntity="Post", inversedBy="medias")
      * @ORM\JoinColumn(name="post_id", referencedColumnName="id")
      */
     private $post;

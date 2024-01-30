@@ -6,7 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity
  */
-class Posts
+class Post
 {
     /**
      * @ORM\Id
@@ -21,18 +21,18 @@ class Posts
     private $content;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Users", inversedBy="posts")
+     * @ORM\ManyToOne(targetEntity="User", inversedBy="posts")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
      */
     private $user;
 
     /**
-     * @ORM\OneToMany(targetEntity="Medias", mappedBy="post")
+     * @ORM\OneToMany(targetEntity="Media", mappedBy="post")
      */
     private $medias;
 
     /**
-     * @ORM\OneToMany(targetEntity="Comments", mappedBy="post")
+     * @ORM\OneToMany(targetEntity="Comment", mappedBy="post")
      */
     private $comments;
 
@@ -62,17 +62,17 @@ class Posts
     }
 
     /**
-     * @return Users
+     * @return User
      */
-    public function getUser(): Users
+    public function getUser(): User
     {
         return $this->user;
     }
 
     /**
-     * @param Users $user
+     * @param User $user
      */
-    public function setUser(Users $user): void
+    public function setUser(User $user): void
     {
         $this->user = $user;
     }
@@ -94,7 +94,7 @@ class Posts
     }
 
     /**
-     * @return Medias[]
+     * @return Media[]
      */
     public function getMedias(): array
     {

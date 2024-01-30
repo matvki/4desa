@@ -2,12 +2,11 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use App\Entity\User;
 
 /**
  * @ORM\Entity
  */
-class Follows
+class Follow
 {
     /**
      * @ORM\Id
@@ -29,6 +28,18 @@ class Follows
     private $follower;
 
     /**
+     * @param $id
+     * @param $user
+     * @param $follower
+     */
+    public function __construct($id, $user, $follower)
+    {
+        $this->id       = $id;
+        $this->user     = $user;
+        $this->follower = $follower;
+    }
+
+    /**
      * @return integer
      */
     public function getId()
@@ -36,27 +47,35 @@ class Follows
         return $this->id;
     }
 
-    public function getUser(): ?User
+    /**
+     * @return User
+     */
+    public function getUser()
     {
         return $this->user;
     }
 
-    public function setUser(?User $user): self
+    /**
+     * @param User $user
+     */
+    public function setUser(User $user): void
     {
         $this->user = $user;
-
-        return $this;
     }
 
-    public function getFollower(): ?User
+    /**
+     * @return User[]
+     */
+    public function getFollower(): array
     {
         return $this->follower;
     }
 
-    public function setFollower(?User $follower): self
+    /**
+     * @param User[] $follower
+     */
+    public function setFollower(array $follower): void
     {
         $this->follower = $follower;
-
-        return $this;
     }
 }

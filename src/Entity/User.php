@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity
  */
-class Users
+class User
 {
     /**
      * @ORM\Id
@@ -53,6 +53,10 @@ class Users
     private $followers;
 
     /**
+     * @ORM\OneToMany(targetEntity="Post")
+     */
+
+    /**
      * @param $id
      * @param $firstName
      * @param $lastName
@@ -64,14 +68,14 @@ class Users
      */
     public function __construct($id, $firstName, $lastName, $username, $email, $description, $following, $followers)
     {
-        $this->id = $id;
-        $this->firstName = $firstName;
-        $this->lastName = $lastName;
-        $this->username = $username;
-        $this->email = $email;
+        $this->id          = $id;
+        $this->firstName   = $firstName;
+        $this->lastName    = $lastName;
+        $this->username    = $username;
+        $this->email       = $email;
         $this->description = $description;
-        $this->following = $following;
-        $this->followers = $followers;
+        $this->following   = $following;
+        $this->followers   = $followers;
     }
 
 
@@ -164,7 +168,7 @@ class Users
     }
 
     /**
-     * @return Follows[] // a test
+     * @return Follow[] // a test
      */
     public function getFollowing(): array
     {
@@ -180,7 +184,7 @@ class Users
     }
 
     /**
-     * @return Follows[]
+     * @return Follow[]
      */
     public function getFollowers(): array
     {
@@ -194,4 +198,6 @@ class Users
     {
         $this->followers = $followers;
     }
+
+
 }
