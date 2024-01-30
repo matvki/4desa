@@ -164,9 +164,9 @@ class Users
     }
 
     /**
-     * @return Collection|Follow[]
+     * @return Follows[] // a test
      */
-    public function getFollowing(): Collection
+    public function getFollowing(): array
     {
         return $this->following;
     }
@@ -180,9 +180,9 @@ class Users
     }
 
     /**
-     * @return Collection|Follow[]
+     * @return Follows[]
      */
-    public function getFollowers(): Collection
+    public function getFollowers(): array
     {
         return $this->followers;
     }
