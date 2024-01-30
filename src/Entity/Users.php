@@ -52,11 +52,28 @@ class Users
      */
     private $followers;
 
-    public function __construct()
+    /**
+     * @param $id
+     * @param $firstName
+     * @param $lastName
+     * @param $username
+     * @param $email
+     * @param $description
+     * @param $following
+     * @param $followers
+     */
+    public function __construct($id, $firstName, $lastName, $username, $email, $description, $following, $followers)
     {
-        $this->following = new ArrayCollection();
-        $this->followers = new ArrayCollection();
+        $this->id = $id;
+        $this->firstName = $firstName;
+        $this->lastName = $lastName;
+        $this->username = $username;
+        $this->email = $email;
+        $this->description = $description;
+        $this->following = $following;
+        $this->followers = $followers;
     }
+
 
     /**
      * @return integer
