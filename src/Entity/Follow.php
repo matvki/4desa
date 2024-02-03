@@ -3,61 +3,39 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class Follow
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: "integer")]
     private $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="User", inversedBy="following")
-     * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
-     */
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "following")]
+    #[ORM\JoinColumn(name: "user_id", referencedColumnName: "id")]
     private $user;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="User", inversedBy="followers")
-     * @ORM\JoinColumn(name="follower_id", referencedColumnName="id")
-     */
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "followers")]
+    #[ORM\JoinColumn(name: "follower_id", referencedColumnName: "id")]
     private $follower;
 
-    /**
-     * @param $id
-     * @param $user
-     * @param $follower
-     */
     public function __construct($id, $user, $follower)
     {
-        $this->id       = $id;
-        $this->user     = $user;
+        $this->id = $id;
+        $this->user = $user;
         $this->follower = $follower;
     }
 
-    /**
-     * @return integer
-     */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
 
-    /**
-     * @return User
-     */
-    public function getUser()
+    public function getUser(): User
     {
         return $this->user;
     }
 
-    /**
-     * @param User $user
-     */
     public function setUser(User $user): void
     {
         $this->user = $user;
@@ -79,3 +57,4 @@ class Follow
         $this->follower = $follower;
     }
 }
+
