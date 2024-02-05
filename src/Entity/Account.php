@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-use App\Repository\UserRepository;
+use App\Repository\AccountRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -10,9 +10,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-#[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\Table(name: '`user`')]
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+#[ORM\Entity(repositoryClass: AccountRepository::class)]
+class Account implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -20,25 +19,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 255, unique: true)]
-    private ?string $email = null;
+    private string $email;
 
     #[ORM\Column]
-    private array $roles = [];
+    private array $roles = ['ROLE_USER'];
 
     /**
      * @var string The hashed password
      */
     #[ORM\Column]
-    private ?string $password = null;
+    private string $password;
 
-    #[ORM\Column(length: 255)]
-    private ?string $pseudo = null;
+    #[ORM\Column(length: 255, unique: true)]
+    private string $pseudo;
 
     #[ORM\Column(type: Types::BLOB, nullable: true)]
-    private $description = null;
+    private string|null $description = null;
 
     #[ORM\Column]
-    private ?bool $private = null;
+    private bool $private = true;
 
     #[ORM\OneToMany(mappedBy: 'belongsTo', targetEntity: Post::class, orphanRemoval: true)]
     private Collection $posts;
@@ -55,18 +54,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function __construct()
     {
-        $this->posts = new ArrayCollection();
+        $this->posts    = new ArrayCollection();
         $this->followed = new ArrayCollection();
-        $this->follows = new ArrayCollection();
+        $this->follows  = new ArrayCollection();
         $this->comments = new ArrayCollection();
     }
 
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->id;
     }
 
-    public function getEmail(): ?string
+    public function getEmail(): string
     {
         return $this->email;
     }
@@ -94,8 +93,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRoles(): array
     {
         $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
     }
@@ -143,7 +140,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getDescription()
+    public function getDescription(): ?string
     {
         return $this->description;
     }
@@ -155,7 +152,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function isPrivate(): ?bool
+    public function isPrivate(): bool
     {
         return $this->private;
     }

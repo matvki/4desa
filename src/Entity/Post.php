@@ -17,11 +17,11 @@ class Post
     private ?int $id = null;
 
     #[ORM\Column(type: Types::BLOB)]
-    private $description = null;
+    private string $description;
 
     #[ORM\ManyToOne(inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $belongsTo = null;
+    private Account $belongsTo;
 
     #[ORM\OneToOne(mappedBy: 'post', cascade: ['persist', 'remove'])]
     private ?Media $media = null;
@@ -34,7 +34,7 @@ class Post
         $this->comments = new ArrayCollection();
     }
 
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->id;
     }
@@ -51,12 +51,12 @@ class Post
         return $this;
     }
 
-    public function getBelongsTo(): ?User
+    public function getBelongsTo(): Account
     {
         return $this->belongsTo;
     }
 
-    public function setBelongsTo(?User $belongsTo): static
+    public function setBelongsTo(Account $belongsTo): static
     {
         $this->belongsTo = $belongsTo;
 
@@ -71,14 +71,12 @@ class Post
     public function setMedia(?Media $media): static
     {
         // unset the owning side of the relation if necessary
-        if ($media === null && $this->media !== null) {
+        if ($media === null && $this->media !== null)
             $this->media->setPost(null);
-        }
 
         // set the owning side of the relation if necessary
-        if ($media !== null && $media->getPost() !== $this) {
+        if ($media !== null && $media->getPost() !== $this)
             $media->setPost($this);
-        }
 
         $this->media = $media;
 
@@ -103,15 +101,11 @@ class Post
         return $this;
     }
 
-    public function removeComment(Comment $comment): static
-    {
-        if ($this->comments->removeElement($comment)) {
-            // set the owning side to null (unless already changed)
-            if ($comment->getPost() === $this) {
-                $comment->setPost(null);
-            }
-        }
-
-        return $this;
-    }
+//    public function removeComment(Comment $comment): static
+//    {
+//        if ($this->comments->removeElement($comment) && $comment->getPost() === $this)
+//                $comment->setPost(null);
+//
+//        return $this;
+//    }
 }

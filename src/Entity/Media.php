@@ -15,22 +15,22 @@ class Media
     private ?int $id = null;
 
     #[ORM\OneToOne(inversedBy: 'media', cascade: ['persist', 'remove'])]
-    private ?Post $post = null;
+    private Post $post;
 
     #[ORM\Column(type: Types::BLOB)]
-    private $picture = null;
+    private string $picture;
 
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->id;
     }
 
-    public function getPost(): ?Post
+    public function getPost(): Post
     {
         return $this->post;
     }
 
-    public function setPost(?Post $post): static
+    public function setPost(Post $post): static
     {
         $this->post = $post;
 

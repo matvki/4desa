@@ -16,38 +16,38 @@ class Comment
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Post $post = null;
+    private Post $post;
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $writer = null;
+    private Account $writer;
 
     #[ORM\Column(type: Types::BLOB)]
-    private $content = null;
+    private string $content;
 
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->id;
     }
 
-    public function getPost(): ?Post
+    public function getPost(): Post
     {
         return $this->post;
     }
 
-    public function setPost(?Post $post): static
+    public function setPost(Post $post): static
     {
         $this->post = $post;
 
         return $this;
     }
 
-    public function getWriter(): ?User
+    public function getWriter(): Account
     {
         return $this->writer;
     }
 
-    public function setWriter(?User $writer): static
+    public function setWriter(Account $writer): static
     {
         $this->writer = $writer;
 

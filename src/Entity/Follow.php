@@ -15,35 +15,35 @@ class Follow
 
     #[ORM\ManyToOne(inversedBy: 'followed')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $followed = null;
+    private Account $followed;
 
     #[ORM\ManyToOne(inversedBy: 'follows')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $follower = null;
+    private Account $follower;
 
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->id;
     }
 
-    public function getFollowed(): ?User
+    public function getFollowed(): Account
     {
         return $this->followed;
     }
 
-    public function setFollowed(?User $followed): static
+    public function setFollowed(Account $followed): static
     {
         $this->followed = $followed;
 
         return $this;
     }
 
-    public function getFollower(): ?User
+    public function getFollower(): Account
     {
         return $this->follower;
     }
 
-    public function setFollower(?User $follower): static
+    public function setFollower(Account $follower): static
     {
         $this->follower = $follower;
 
