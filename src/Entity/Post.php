@@ -1,76 +1,117 @@
 <?php
+
 namespace App\Entity;
 
+use App\Repository\PostRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: PostRepository::class)]
 class Post
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: "integer")]
-    private $id;
+    #[ORM\Column]
+    private ?int $id = null;
 
-    #[ORM\Column(type: "string", length: 255)]
-    private $content;
+    #[ORM\Column(type: Types::BLOB)]
+    private $description = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "posts")]
-    #[ORM\JoinColumn(name: "user_id", referencedColumnName: "id")]
-    private $user;
+    #[ORM\ManyToOne(inversedBy: 'posts')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $belongsTo = null;
 
-    #[ORM\OneToMany(targetEntity: Media::class, mappedBy: "post")]
-    private $medias;
+    #[ORM\OneToOne(mappedBy: 'post', cascade: ['persist', 'remove'])]
+    private ?Media $media = null;
 
-    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: "post")]
-    private $comments;
+    #[ORM\OneToMany(mappedBy: 'post', targetEntity: Comment::class, orphanRemoval: true)]
+    private Collection $comments;
 
-    public function __construct($id, $content, $user, $medias, $comments)
+    public function __construct()
     {
-        $this->id = $id;
-        $this->content = $content;
-        $this->user = $user;
-        $this->medias = $medias;
-        $this->comments = $comments;
+        $this->comments = new ArrayCollection();
     }
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getUser(): User
+    public function getDescription()
     {
-        return $this->user;
+        return $this->description;
     }
 
-    public function setUser(User $user): void
+    public function setDescription($description): static
     {
-        $this->user = $user;
+        $this->description = $description;
+
+        return $this;
     }
 
-    public function getContent(): string
+    public function getBelongsTo(): ?User
     {
-        return $this->content;
+        return $this->belongsTo;
     }
 
-    public function setContent(string $content): void
+    public function setBelongsTo(?User $belongsTo): static
     {
-        $this->content = $content;
+        $this->belongsTo = $belongsTo;
+
+        return $this;
+    }
+
+    public function getMedia(): ?Media
+    {
+        return $this->media;
+    }
+
+    public function setMedia(?Media $media): static
+    {
+        // unset the owning side of the relation if necessary
+        if ($media === null && $this->media !== null) {
+            $this->media->setPost(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($media !== null && $media->getPost() !== $this) {
+            $media->setPost($this);
+        }
+
+        $this->media = $media;
+
+        return $this;
     }
 
     /**
-     * @return Media[]
+     * @return Collection<int, Comment>
      */
-    public function getMedias(): array
-    {
-        return $this->medias;
-    }
-
-    /**
-     * @return Comment[]
-     */
-    public function getComments(): array
+    public function getComments(): Collection
     {
         return $this->comments;
+    }
+
+    public function addComment(Comment $comment): static
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setPost($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): static
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getPost() === $this) {
+                $comment->setPost(null);
+            }
+        }
+
+        return $this;
     }
 }

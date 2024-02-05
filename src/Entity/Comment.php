@@ -1,67 +1,68 @@
 <?php
+
 namespace App\Entity;
 
+use App\Repository\CommentRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: CommentRepository::class)]
 class Comment
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: "integer")]
-    private $id;
+    #[ORM\Column]
+    private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: "comments")]
-    #[ORM\JoinColumn(name: "post_id", referencedColumnName: "id")]
-    private $post;
+    #[ORM\ManyToOne(inversedBy: 'comments')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Post $post = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(name: "user_id", referencedColumnName: "id")]
-    private $user;
+    #[ORM\ManyToOne(inversedBy: 'comments')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $writer = null;
 
-    #[ORM\Column(type: "string", length: 255)]
-    private $text;
+    #[ORM\Column(type: Types::BLOB)]
+    private $content = null;
 
-    public function __construct($id, $post, $user, $text)
-    {
-        $this->id = $id;
-        $this->post = $post;
-        $this->user = $user;
-        $this->text = $text;
-    }
-
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getPost(): Post
+    public function getPost(): ?Post
     {
         return $this->post;
     }
 
-    public function setPost(Post $post): void
+    public function setPost(?Post $post): static
     {
         $this->post = $post;
+
+        return $this;
     }
 
-    public function getUser(): User
+    public function getWriter(): ?User
     {
-        return $this->user;
+        return $this->writer;
     }
 
-    public function setUser(User $user): void
+    public function setWriter(?User $writer): static
     {
-        $this->user = $user;
+        $this->writer = $writer;
+
+        return $this;
     }
 
-    public function getText(): string
+    public function getContent()
     {
-        return $this->text;
+        return $this->content;
     }
 
-    public function setText(string $text): void
+    public function setContent($content): static
     {
-        $this->text = $text;
+        $this->content = $content;
+
+        return $this;
     }
 }

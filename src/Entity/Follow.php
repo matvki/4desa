@@ -1,59 +1,52 @@
 <?php
+
 namespace App\Entity;
 
+use App\Repository\FollowRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: FollowRepository::class)]
 class Follow
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: "integer")]
-    private $id;
+    #[ORM\Column]
+    private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "following")]
-    #[ORM\JoinColumn(name: "user_id", referencedColumnName: "id")]
-    private $user;
+    #[ORM\ManyToOne(inversedBy: 'followed')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $followed = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "followers")]
-    #[ORM\JoinColumn(name: "follower_id", referencedColumnName: "id")]
-    private $follower;
+    #[ORM\ManyToOne(inversedBy: 'follows')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $follower = null;
 
-    public function __construct($id, $user, $follower)
-    {
-        $this->id = $id;
-        $this->user = $user;
-        $this->follower = $follower;
-    }
-
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getUser(): User
+    public function getFollowed(): ?User
     {
-        return $this->user;
+        return $this->followed;
     }
 
-    public function setUser(User $user): void
+    public function setFollowed(?User $followed): static
     {
-        $this->user = $user;
+        $this->followed = $followed;
+
+        return $this;
     }
 
-    /**
-     * @return User[]
-     */
-    public function getFollower(): array
+    public function getFollower(): ?User
     {
         return $this->follower;
     }
 
-    /**
-     * @param User[] $follower
-     */
-    public function setFollower(array $follower): void
+    public function setFollower(?User $follower): static
     {
         $this->follower = $follower;
+
+        return $this;
     }
 }
