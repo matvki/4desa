@@ -3,9 +3,33 @@
 namespace App\Entity;
 
 use App\Repository\MediaRepository;
+use Doctrine\DBAL\Types\BlobType;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use OpenApi\Attributes as OA;
 
+#[OA\Schema(
+    properties: [
+        new OA\Property(
+            property: 'id',
+            type: 'integer',
+            description: 'Media id',
+            example: 1
+        ),
+        new OA\Property(
+            property: 'picture',
+            type: 'string',
+            description: 'Media picture',
+            example: 'base64:xxxxx'
+        ),
+        new OA\Property(
+            property: 'post',
+            type: Post::class,
+            description: 'Post entity',
+            example: 1
+        ),
+    ]
+)]
 #[ORM\Entity(repositoryClass: MediaRepository::class)]
 class Media
 {
@@ -17,8 +41,8 @@ class Media
     #[ORM\OneToOne(inversedBy: 'media', cascade: ['persist', 'remove'])]
     private Post $post;
 
-    #[ORM\Column(type: Types::BLOB)]
-    private string $picture;
+    #[ORM\Column(type: "text")]
+    private ?string $picture;
 
     public function getId(): int
     {
@@ -37,7 +61,7 @@ class Media
         return $this;
     }
 
-    public function getPicture()
+    public function getPicture(): string
     {
         return $this->picture;
     }

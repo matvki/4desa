@@ -7,8 +7,15 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use OpenApi\Attributes as OA;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
+#[OA\Schema(
+    properties: [
+        
+    ]
+)]
 class Post
 {
     #[ORM\Id]
@@ -16,7 +23,8 @@ class Post
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::BLOB)]
+    #[ORM\Column(type: 'string')]
+    #[Groups(['account_data'])]
     private string $description;
 
     #[ORM\ManyToOne(inversedBy: 'posts')]
@@ -24,15 +32,8 @@ class Post
     private Account $belongsTo;
 
     #[ORM\OneToOne(mappedBy: 'post', cascade: ['persist', 'remove'])]
+//    #[Groups(['account_data'])]
     private ?Media $media = null;
-
-    #[ORM\OneToMany(mappedBy: 'post', targetEntity: Comment::class, orphanRemoval: true)]
-    private Collection $comments;
-
-    public function __construct()
-    {
-        $this->comments = new ArrayCollection();
-    }
 
     public function getId(): int
     {
@@ -82,30 +83,4 @@ class Post
 
         return $this;
     }
-
-    /**
-     * @return Collection<int, Comment>
-     */
-    public function getComments(): Collection
-    {
-        return $this->comments;
-    }
-
-    public function addComment(Comment $comment): static
-    {
-        if (!$this->comments->contains($comment)) {
-            $this->comments->add($comment);
-            $comment->setPost($this);
-        }
-
-        return $this;
-    }
-
-//    public function removeComment(Comment $comment): static
-//    {
-//        if ($this->comments->removeElement($comment) && $comment->getPost() === $this)
-//                $comment->setPost(null);
-//
-//        return $this;
-//    }
 }

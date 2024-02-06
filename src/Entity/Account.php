@@ -6,34 +6,83 @@ use App\Repository\AccountRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
+use OpenApi\Attributes as OA;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use function PHPUnit\Framework\isEmpty;
 
 #[ORM\Entity(repositoryClass: AccountRepository::class)]
+#[OA\Schema(
+    properties: [
+        new OA\Property(
+            property: 'id',
+            type: 'integer',
+            description: 'The id of the account',
+            readOnly: true
+        ),
+        new OA\Property(
+            property: 'email',
+            type: 'string',
+            description: 'The email of the account',
+        ),
+        new OA\Property(
+            property: 'roles',
+            type: 'array',
+            description: 'The roles of the account',
+            items: new OA\Items(type: 'string')
+        ),
+        new OA\Property(
+            property: 'password',
+            type: 'string',
+            description: 'The password of the account (hashed when saved)',
+        ),
+        new OA\Property(
+            property: 'pseudo',
+            type: 'string',
+            description: 'The pseudo of the account',
+        ),
+        new OA\Property(
+            property: 'description',
+            type: 'string',
+            description: 'The description of the account',
+        ),
+        new OA\Property(
+            property: 'private',
+            type: 'boolean',
+            description: 'The private status of the account',
+        ),
+        new OA\Property(
+            property: 'posts',
+            type: 'array',
+            description: 'The posts of the account',
+            items: new OA\Items(ref: '#/components/schemas/Post')
+        )
+    ]
+)]
 class Account implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private int $id;
 
-    #[ORM\Column(length: 255, unique: true)]
-    private string $email;
+    #[ORM\Column(type: 'string', length: 255, unique: true)]
+    private ?string $email;
 
-    #[ORM\Column]
-    private array $roles = ['ROLE_USER'];
+    #[ORM\Column(type: 'json')]
+    private array $roles = [];
 
     /**
      * @var string The hashed password
      */
     #[ORM\Column]
-    private string $password;
+    private ?string $password = null;
 
     #[ORM\Column(length: 255, unique: true)]
     private string $pseudo;
 
-    #[ORM\Column(type: Types::BLOB, nullable: true)]
+    #[ORM\Column(type: 'text', nullable: true)]
     private string|null $description = null;
 
     #[ORM\Column]
@@ -42,22 +91,9 @@ class Account implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'belongsTo', targetEntity: Post::class, orphanRemoval: true)]
     private Collection $posts;
 
-    #[ORM\OneToMany(mappedBy: 'followed', targetEntity: Follow::class, orphanRemoval: true)]
-    private Collection $followed;
-
-    #[ORM\OneToMany(mappedBy: 'follower', targetEntity: Follow::class, orphanRemoval: true)]
-    private Collection $follows;
-
-    #[ORM\OneToMany(mappedBy: 'writer', targetEntity: Comment::class, orphanRemoval: true)]
-    private Collection $comments;
-
-
     public function __construct()
     {
         $this->posts    = new ArrayCollection();
-        $this->followed = new ArrayCollection();
-        $this->follows  = new ArrayCollection();
-        $this->comments = new ArrayCollection();
     }
 
     public function getId(): int
@@ -99,6 +135,9 @@ class Account implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setRoles(array $roles): static
     {
+        if (isEmpty($roles))
+            $roles = ['ROLE_USER'];
+
         $this->roles = $roles;
 
         return $this;
@@ -188,96 +227,6 @@ class Account implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($post->getBelongsTo() === $this) {
                 $post->setBelongsTo(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Follow>
-     */
-    public function getFollowed(): Collection
-    {
-        return $this->followed;
-    }
-
-    public function addFollowed(Follow $followed): static
-    {
-        if (!$this->followed->contains($followed)) {
-            $this->followed->add($followed);
-            $followed->setFollowed($this);
-        }
-
-        return $this;
-    }
-
-    public function removeFollowed(Follow $followed): static
-    {
-        if ($this->followed->removeElement($followed)) {
-            // set the owning side to null (unless already changed)
-            if ($followed->getFollowed() === $this) {
-                $followed->setFollowed(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Follow>
-     */
-    public function getFollows(): Collection
-    {
-        return $this->follows;
-    }
-
-    public function addFollow(Follow $follow): static
-    {
-        if (!$this->follows->contains($follow)) {
-            $this->follows->add($follow);
-            $follow->setFollower($this);
-        }
-
-        return $this;
-    }
-
-    public function removeFollow(Follow $follow): static
-    {
-        if ($this->follows->removeElement($follow)) {
-            // set the owning side to null (unless already changed)
-            if ($follow->getFollower() === $this) {
-                $follow->setFollower(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Comment>
-     */
-    public function getComments(): Collection
-    {
-        return $this->comments;
-    }
-
-    public function addComment(Comment $comment): static
-    {
-        if (!$this->comments->contains($comment)) {
-            $this->comments->add($comment);
-            $comment->setWriter($this);
-        }
-
-        return $this;
-    }
-
-    public function removeComment(Comment $comment): static
-    {
-        if ($this->comments->removeElement($comment)) {
-            // set the owning side to null (unless already changed)
-            if ($comment->getWriter() === $this) {
-                $comment->setWriter(null);
             }
         }
 
