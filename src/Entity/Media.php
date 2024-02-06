@@ -2,19 +2,74 @@
 
 namespace App\Entity;
 
+use App\Repository\MediaRepository;
+use Doctrine\DBAL\Types\BlobType;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use OpenApi\Attributes as OA;
 
-#[ORM\Entity]
+#[OA\Schema(
+    properties: [
+        new OA\Property(
+            property: 'id',
+            type: 'integer',
+            description: 'Media id',
+            example: 1
+        ),
+        new OA\Property(
+            property: 'picture',
+            type: 'string',
+            description: 'Media picture',
+            example: 'base64:xxxxx'
+        ),
+        new OA\Property(
+            property: 'post',
+            type: Post::class,
+            description: 'Post entity',
+            example: 1
+        ),
+    ]
+)]
+#[ORM\Entity(repositoryClass: MediaRepository::class)]
 class Media
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: "integer")]
-    private $id;
+    #[ORM\Column]
+    private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: "medias")]
-    #[ORM\JoinColumn(name: "post_id", referencedColumnName: "id")]
-    private $post;
+    #[ORM\OneToOne(inversedBy: 'media', cascade: ['persist', 'remove'])]
+    private Post $post;
 
-    // Ajoutez ici les propriétés nécessaires pour obtenir des images ou des vidéos depuis Azure
+    #[ORM\Column(type: "text")]
+    private ?string $picture;
+
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function getPost(): Post
+    {
+        return $this->post;
+    }
+
+    public function setPost(Post $post): static
+    {
+        $this->post = $post;
+
+        return $this;
+    }
+
+    public function getPicture(): string
+    {
+        return $this->picture;
+    }
+
+    public function setPicture($picture): static
+    {
+        $this->picture = $picture;
+
+        return $this;
+    }
 }

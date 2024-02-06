@@ -1,76 +1,86 @@
 <?php
+
 namespace App\Entity;
 
+use App\Repository\PostRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use OpenApi\Attributes as OA;
+use Symfony\Component\Serializer\Attribute\Groups;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: PostRepository::class)]
+#[OA\Schema(
+    properties: [
+        
+    ]
+)]
 class Post
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: "integer")]
-    private $id;
+    #[ORM\Column]
+    private ?int $id = null;
 
-    #[ORM\Column(type: "string", length: 255)]
-    private $content;
+    #[ORM\Column(type: 'string')]
+    #[Groups(['account_data'])]
+    private string $description;
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "posts")]
-    #[ORM\JoinColumn(name: "user_id", referencedColumnName: "id")]
-    private $user;
+    #[ORM\ManyToOne(inversedBy: 'posts')]
+    #[ORM\JoinColumn(nullable: false)]
+    private Account $belongsTo;
 
-    #[ORM\OneToMany(targetEntity: Media::class, mappedBy: "post")]
-    private $medias;
-
-    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: "post")]
-    private $comments;
-
-    public function __construct($id, $content, $user, $medias, $comments)
-    {
-        $this->id = $id;
-        $this->content = $content;
-        $this->user = $user;
-        $this->medias = $medias;
-        $this->comments = $comments;
-    }
+    #[ORM\OneToOne(mappedBy: 'post', cascade: ['persist', 'remove'])]
+//    #[Groups(['account_data'])]
+    private ?Media $media = null;
 
     public function getId(): int
     {
         return $this->id;
     }
 
-    public function getUser(): User
+    public function getDescription()
     {
-        return $this->user;
+        return $this->description;
     }
 
-    public function setUser(User $user): void
+    public function setDescription($description): static
     {
-        $this->user = $user;
+        $this->description = $description;
+
+        return $this;
     }
 
-    public function getContent(): string
+    public function getBelongsTo(): Account
     {
-        return $this->content;
+        return $this->belongsTo;
     }
 
-    public function setContent(string $content): void
+    public function setBelongsTo(Account $belongsTo): static
     {
-        $this->content = $content;
+        $this->belongsTo = $belongsTo;
+
+        return $this;
     }
 
-    /**
-     * @return Media[]
-     */
-    public function getMedias(): array
+    public function getMedia(): ?Media
     {
-        return $this->medias;
+        return $this->media;
     }
 
-    /**
-     * @return Comment[]
-     */
-    public function getComments(): array
+    public function setMedia(?Media $media): static
     {
-        return $this->comments;
+        // unset the owning side of the relation if necessary
+        if ($media === null && $this->media !== null)
+            $this->media->setPost(null);
+
+        // set the owning side of the relation if necessary
+        if ($media !== null && $media->getPost() !== $this)
+            $media->setPost($this);
+
+        $this->media = $media;
+
+        return $this;
     }
 }
