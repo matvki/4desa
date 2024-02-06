@@ -17,12 +17,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 #[OA\Tag(
     name: 'Account',
-    description: 'Operations related to account management such as creating, updating, retrieving, and logging in user accounts.'
+    description: 'Operations related to account management such as creating, updating, retrieving, deleting, and logging in user accounts.'
 )]
 class AccountController extends AbstractController
 {
     private EntityManagerInterface $emi;
     private SerializerInterface    $serializer;
+
 
     public function __construct(
         EntityManagerInterface $emi,
@@ -89,7 +90,7 @@ class AccountController extends AbstractController
     #[OA\Parameter(
         name: 'private',
         in: 'query',
-        description: 'Determine if a user is private or not, defining if he can be visible by other users',
+        description: 'Determine if a user is private or not, defining if he can be visible by other users (default at true)',
         required: false
     )]
     #[OA\Parameter(
@@ -106,6 +107,7 @@ class AccountController extends AbstractController
         $account = new Account();
         $account->setEmail($data['email']);
         $account->setPseudo($data['pseudo']);
+        $account->setRoles([$data['roles']]);
 
         // Hash password
         $hashedPassword = $passwordEncoder->hashPassword($account, $data['password']);
@@ -115,7 +117,6 @@ class AccountController extends AbstractController
             $account->setDescription($data['description']);
         if ($data['private'] !== "")
             $account->setPrivate($data['private']);
-        $account->setRoles([$data['roles']]);
 
         try {
             $this->emi->persist($account);
@@ -131,6 +132,12 @@ class AccountController extends AbstractController
         response: 200,
         description: 'Return a json array with a the id of the user, and the pseudo',
     )]
+    #[OA\Parameter(
+        name: 'id',
+        in: 'path',
+        description: 'Account id',
+        required: true
+    )]
     #[Route('api/account/get/{id}', name: 'get_account', methods: ['GET'])]
     public function getAccount(Account $account): JsonResponse
     {
@@ -144,9 +151,9 @@ class AccountController extends AbstractController
             $accountData['posts']       = $account->getPosts();
         }
 
-        $accountData = $this->serializer->serialize($accountData, 'json', ['account_data']);
+        $accountData = $this->serializer->serialize($accountData, 'json', ['groups' => ['account_details']]);
 
-        return $this->json($accountData, 'account_data');
+        return $this->json(json_decode($accountData, true));
     }
 
     #[OA\Response(
@@ -160,27 +167,27 @@ class AccountController extends AbstractController
         required: true
     )]
     #[OA\Parameter(
-        name: 'email',
-        in: 'query',
-        description: 'User\'s email',   
-        required: true
-    )]
-    #[OA\Parameter(
         name: 'pseudo',
         in: 'query',
-        description: 'User\'s account name',
-        required: true
+        description: 'Change user\'s account name',
+        required: false
     )]
     #[OA\Parameter(
         name: 'description',
         in: 'query',
-        description: 'User\'s profile description',
+        description: 'change User\'s profile description',
         required: false
     )]
     #[OA\Parameter(
         name: 'private',
         in: 'query',
-        description: 'Determine if a user is private or not, defining if he can be visible by other users',
+        description: 'Change visibilitie of a user',
+        required: false
+    )]
+    #[OA\Parameter(
+        name: 'roles',
+        in: 'query',
+        description: 'Change role of the user',
         required: false
     )]
     #[Route('/api/account/update/{id}', name: 'update_account', methods: ['PUT'])]
@@ -188,8 +195,10 @@ class AccountController extends AbstractController
     {
         $currentUser = $this->getUser();
 
-        if ($currentUser !== $account)
+        if ($currentUser === null) // user not connected
             return $this->json(['message' => 'Request not found'], Response::HTTP_NOT_FOUND); // to protect api route from attack
+        if ($currentUser !== $account) // wrong user modification
+            return $this->json(['message' => 'Unauthorized'], Response::HTTP_UNAUTHORIZED);
 
         $data = json_decode($request->getContent(), true);
 
@@ -219,16 +228,28 @@ class AccountController extends AbstractController
         response: 200,
         description: 'Return a json array with a validation message if succeed or not',
     )]
+    #[OA\Parameter(
+        name: 'id',
+        in: 'path',
+        description: 'Account id',
+        required: true
+    )]
     #[Route('/api/account/delete/{id}', name: 'delete_account', methods: ['DELETE'])]
     public function deleteAccount(Account $account, EntityManagerInterface $emi): JsonResponse
     {
         $currentUser = $this->getUser();
 
+        if ($currentUser === null) // user not connected
+            return $this->json(['message' => 'Request not found'], Response::HTTP_NOT_FOUND); // to protect api route from attack
         if ($currentUser !== $account)
-            return $this->json(['message' => 'Request not found'], Response::HTTP_NOT_FOUND); // to protect api road from attack
+            return $this->json(['message' => 'Unauthorized'], Response::HTTP_UNAUTHORIZED);
 
-        $emi->remove($account);
-        $emi->flush();
+        try {
+            $emi->remove($account);
+            $this->emi->flush();
+        } catch (Exception $exception) {
+            return $this->json(['message' => $exception->getMessage()], 500);
+        }
 
         return $this->json(['message' => 'Account deleted successfully']);
     }
