@@ -37,14 +37,18 @@ class PostController extends AbstractController
     #[OA\Parameter(
         name: 'picture',
         in: 'query',
-        description: 'User\'s Picture for the post',
+        description: 'User\'s Picture for the post in base64',
+        required: false
     )]
     #[Route('/api/post/create', name: 'create_post', methods: ['POST'])]
     public function createPost(Request $request): JsonResponse
     {
-        $data        = json_decode($request->getContent(), true);
         $currentUser = $this->getUser();
-        $post        = new Post();
+        if ($currentUser === null) // user not connected
+            return $this->json(['message' => 'Request not found'], Response::HTTP_NOT_FOUND); // to protect api route from attack
+
+        $data = json_decode($request->getContent(), true);
+        $post = new Post();
 
         $post->setDescription($data['description']);
         $post->setBelongsTo($currentUser);
@@ -87,6 +91,8 @@ class PostController extends AbstractController
     public function getPost(Post $post): JsonResponse
     {
         $currentUser = $this->getUser();
+        if ($currentUser === null) // user not connected
+            return $this->json(['message' => 'Request not found'], Response::HTTP_NOT_FOUND); // to protect api route from attack
 
         if ($post->getBelongsTo()->isPrivate()) {
             if ($post->getBelongsTo() !== $currentUser )
@@ -111,14 +117,14 @@ class PostController extends AbstractController
     #[OA\Parameter(
         name: 'description',
         in: 'query',
-        description: 'User\'s post description',
-        required: true,
+        description: 'Change for user\'s post description',
+        required: false,
     )]
     #[OA\Parameter(
         name: 'picture',
         in: 'query',
-        description: 'User\'s Picture for the post',
-        required: true,
+        description: 'Change for user\'s Picture for the post in base64',
+        required: false,
     )]
     #[OA\Parameter(
         name: 'id',
@@ -126,45 +132,26 @@ class PostController extends AbstractController
         description: 'Post id',
         required: true
     )]
-    #[Route('/api/post/update/{id}', name: 'update_post', methods: ['PATCH'])]
-    public function updatePost(Post $post, Request $request, EntityManagerInterface $emi): JsonResponse
+    #[Route('/api/post/update/{id}', name: 'update_post', methods: ['PUT'])]
+    public function updatePost(Post $post, Request $request): JsonResponse
     {
         $data        = json_decode($request->getContent(), true);
         $currentUser = $this->getUser();
 
+        if ($currentUser === null) // user not connected
+            return $this->json(['message' => 'Request not found'], Response::HTTP_NOT_FOUND); // to protect api route from attack
         if ($post->getBelongsTo() !== $currentUser)
             return $this->json(['message' => 'Unauthorized'], Response::HTTP_FORBIDDEN);
 
-        $post->setDescription($data['description']);
+        if (isset($data['description']))
+            $post->setDescription($data['description']);
+        if (isset($data['picture'])) // Handling media update (assuming $data['picture'] is a base64 image)
+            $post->getMedia()->setPicture($data['picture']);
 
         try {
             $this->emi->flush();
         } catch (Exception $exception) {
             return $this->json(['message' => $exception->getMessage()], 500);
-        }
-
-        // Handling media update (assuming $data['picture'] is a base64 image)
-        if (isset($data['picture'])) {
-            // Clear existing media
-            $previousPicture = $post->getMedia();
-
-            try {
-                $emi->remove($previousPicture);
-                $this->emi->flush();
-            } catch (Exception $exception) {
-                return $this->json(['message' => $exception->getMessage()], 500);
-            }
-
-            $media = new Media();
-            $media->setPost($post);
-            $media->setPicture($data['picture']);
-
-            try {
-                $emi->persist($media);
-                $this->emi->flush();
-            } catch (Exception $exception) {
-                return $this->json(['message' => $exception->getMessage()], 500);
-            }
         }
 
         return $this->json(['message' => 'Post updated successfully']);
@@ -181,19 +168,22 @@ class PostController extends AbstractController
         required: true
     )]
     #[Route('/api/post/delete/{id}', name: 'delete_post', methods: ['DELETE'])]
-    public function deletePost(Post $post, EntityManagerInterface $emi): JsonResponse
+    public function deletePost(Post $post): JsonResponse
     {
         $currentUser = $this->getUser();
-        
+
+        if ($currentUser === null) // user not connected
+            return $this->json(['message' => 'Request not found'], Response::HTTP_NOT_FOUND); // to protect api route from attack
         if ($post->getBelongsTo() !== $currentUser)
             return $this->json(['message' => 'Unauthorized'], Response::HTTP_FORBIDDEN);
 
         try {
-            $emi->remove($post);
+            $this->emi->remove($post);
             $this->emi->flush();
         } catch (Exception $exception) {
             return $this->json(['message' => $exception->getMessage()], 500);
         }
+
         return $this->json(['message' => 'Post deleted successfully']);
     }
 }

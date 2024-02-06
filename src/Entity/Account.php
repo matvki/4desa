@@ -10,6 +10,7 @@ use OpenApi\Attributes as OA;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Attribute\Groups;
 use function PHPUnit\Framework\isEmpty;
 
 #[ORM\Entity(repositoryClass: AccountRepository::class)]
@@ -83,12 +84,13 @@ class Account implements UserInterface, PasswordAuthenticatedUserInterface
     private string $pseudo;
 
     #[ORM\Column(type: 'text', nullable: true)]
-    private string|null $description = null;
+    private ?string $description = null;
 
     #[ORM\Column]
     private bool $private = true;
 
     #[ORM\OneToMany(mappedBy: 'belongsTo', targetEntity: Post::class, orphanRemoval: true)]
+    #[Groups(["account_details"])]
     private Collection $posts;
 
     public function __construct()

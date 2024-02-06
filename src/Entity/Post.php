@@ -3,9 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\PostRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -24,7 +21,7 @@ class Post
     private ?int $id = null;
 
     #[ORM\Column(type: 'string')]
-    #[Groups(['account_data'])]
+    #[Groups(["account_details"])]
     private string $description;
 
     #[ORM\ManyToOne(inversedBy: 'posts')]
@@ -32,7 +29,7 @@ class Post
     private Account $belongsTo;
 
     #[ORM\OneToOne(mappedBy: 'post', cascade: ['persist', 'remove'])]
-//    #[Groups(['account_data'])]
+    #[Groups(["account_details"])]
     private ?Media $media = null;
 
     public function getId(): int

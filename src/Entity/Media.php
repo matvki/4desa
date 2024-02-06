@@ -7,6 +7,7 @@ use Doctrine\DBAL\Types\BlobType;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[OA\Schema(
     properties: [
@@ -42,7 +43,8 @@ class Media
     private Post $post;
 
     #[ORM\Column(type: "text")]
-    private ?string $picture;
+    #[Groups(["account_details"])]
+    private string $picture;
 
     public function getId(): int
     {
